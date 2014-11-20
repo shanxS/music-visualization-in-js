@@ -219,7 +219,6 @@ shanx2 = (function() {
          }
          waveDataAverage /= length;
          frequencyDataAverage /= length;
-         threshold = sma10(frequencyDataAverage);
          shortThreshold = sma5(frequencyDataAverage);
         
 
@@ -236,34 +235,15 @@ shanx2 = (function() {
          
          
          if(shortThreshold > threshold)
+         {
             camera.position.z += frequencyDataAverage*5;
-         else
-            camera.position.z = zLocation;
-         
-         
-         /*
-         if (currentSizeCount < sizeHoldCount)
-            currentSizeCount++;
+            threshold = sma10(shortThreshold);
+         }
          else
          {
-             currentSizeCount = 0;
-             
-             if (camera.position.z != zLocation)
-                camera.position.z = zLocation;
-             else
-                camera.position.z -= frequencyDataAverage*5;
-                //camera.position.z = zLocation;
-         }*/
-         /*
-         currentSizeCount++;
-         if (currentSizeCount % 100)
-            console.log(waveDataAverage);
-            console.log(frequencyDataAverage);
-         
-         camera.position.z = zLocation;
-         camera.position.z -= frequencyDataAverage;
-         //camera.position.z = zLocation;
-         */
+            camera.position.z = zLocation;
+            threshold = sma10(frequencyDataAverage);
+         }
          
          camera.lookAt(scene.position);
 
