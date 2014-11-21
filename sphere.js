@@ -34,29 +34,15 @@ shanx2 = (function() {
          camera, scene, renderer;
 
      // shanxS
+     var binCount;
      var lines = [];
      var particles = [];
      var zLocation = 0;
      var xLocation = 0;
      var yLocation = 0;
+     var threshold = 0;
      var isCamLocationSet = 0;
      var currentCamLocation = 0;
-     var currentSizeCount = 0;
-     camLocation = [
-        {x :  1,   y :  0   },
-        {x :  0.8, y :  0.5 },
-        {x :  0.5, y :  0.8 },
-        {x :  0,   y :  1   },
-        {x : -0.5, y :  0.8 },
-        {x : -0.8, y :  0.5 },
-        {x : -1  , y :  0   },
-        {x : -0.8, y : -0.5 },
-        {x : -0.5, y : -0.8 },
-        {x :  0,   y : -1   },
-        {x :  0.5, y : -0.8 },
-        {x :  0.8, y : -0.5 }
-     ]
-
 
 
      function onDocumentMouseMove(event) {
@@ -110,6 +96,9 @@ shanx2 = (function() {
              amountY = 50,
              particle;
 
+             
+         binCount = config.count;
+         
          container = document.createElement('div');
          document.body.appendChild(container);
 
@@ -123,7 +112,6 @@ shanx2 = (function() {
          container.appendChild(renderer.domElement);
 
          // particles
-
          var PI2 = Math.PI * 2;
          var material = new THREE.SpriteCanvasMaterial({
 
@@ -138,7 +126,7 @@ shanx2 = (function() {
 
          });
 
-         for (var i = 0; i < 1000; i++) {
+         for (var i = 0; i < binCount; i++) {
 
              particle = new THREE.Sprite(material);
              particle.position.x = Math.random() * 2 - 1;
@@ -154,8 +142,7 @@ shanx2 = (function() {
          }
 
          // lines
-
-         for (var i = 0; i < 300; i++) {
+         for (var i = 0; i < binCount; i++) {
 
              var geometry = new THREE.Geometry();
 
@@ -173,8 +160,8 @@ shanx2 = (function() {
 
              var line = new THREE.Line(geometry, new THREE.LineBasicMaterial({
                  color: 0xffffff,
-                 linewidth: 1,
-                 opacity: 0.7,
+                 linewidth: 2,
+                 opacity: 1,
                  blending: THREE.AdditiveBlending,
                  depthTest: false,
                  transparent: true
@@ -207,46 +194,30 @@ shanx2 = (function() {
             isCamLocationSet = 1;
          }
         
-         var length = waveData.length;
-         var waveDataAverage = 0;
          var frequencyDataAverage = 0;    
-         for (var i = 0; i < length/100; i++) {
-             waveDataAverage += waveData[i];
+         for (var i = 0; i < binCount; i++) {
              frequencyDataAverage += frequencyData[i];
             
-             //lines[i].material.color.setHSL(Math.random(), 1, Math.random());;
-             //particles[i].material.color.setHSL(Math.random(), 1, Math.random());;
+             lines[i].material.color.setRGB(Math.random(), Math.random(), Math.random());
+             particles[i].material.color.setRGB(Math.random(), Math.random(), Math.random());
          }
-         waveDataAverage /= length;
-         frequencyDataAverage /= length;
+         
+         
+         frequencyDataAverage /= binCount;
          shortThreshold = sma5(frequencyDataAverage);
-        
-
-         //camera.position.x += (camera.position.x) + 10;
-         //camera.position.y += (camera.position.y) + 10;
+         threshold = sma10(frequencyDataAverage);
+         if(shortThreshold > threshold && camera.position.z <= (zLocation + 50))
+            camera.position.z += 5;
+         else
+            camera.position.z = zLocation;
          
-         newCamLocation = currentCamLocation % camLocation.length;
-         newx = camLocation[newCamLocation].x * zLocation;
-         newy = camLocation[newCamLocation].y * Location;
          
+         // rotation
          camera.position.x += Math.cos(currentCamLocation/100)*3;
          camera.position.y += Math.sin(currentCamLocation/100)*3;
          currentCamLocation++;
          
-         
-         if(shortThreshold > threshold)
-         {
-            camera.position.z += frequencyDataAverage*5;
-            threshold = sma10(shortThreshold);
-         }
-         else
-         {
-            camera.position.z = zLocation;
-            threshold = sma10(frequencyDataAverage);
-         }
-         
          camera.lookAt(scene.position);
-
          renderer.render(scene, camera);
 
      }
